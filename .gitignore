@@ -1,0 +1,20 @@
+# CMake build directories
+build/
+build-*/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# Qt specific
+CMakeLists.txt.user
+*.pro.user
+*.qm
+.qtcreator/
+
+# OS specific files
+.DS_Store
+Thumbs.db
