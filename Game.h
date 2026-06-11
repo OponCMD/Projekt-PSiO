@@ -1,13 +1,15 @@
-#include "Game.h"
-#include "Config.h"
+#pragma once
+#include <SFML/Graphics.hpp>
 
-Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP") {
-    window.setFramerateLimit(60);
-}
+class Game {
+private:
+    sf::RenderWindow window;
 
-void Game::run() {
-    // Pusta pêtla na razie
-}
+    void processEvents();
+    void update(float dt);
+    void render();
 
-void Game::processEvents() {}
-void Game::render() {}
+public:
+    Game();
+    void run();
+};

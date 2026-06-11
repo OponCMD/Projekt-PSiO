@@ -1,7 +1,10 @@
-#include <iostream>
-// Tu niedlugo bedzie Game.h
+#include "Game.h"
 
+// ==========================================
+// 5. MAIN
+// ==========================================
 int main() {
-    std::cout << "Inicjalizacja projektu..." << std::endl;
+    Game game;
+    game.run();
     return 0;
 }

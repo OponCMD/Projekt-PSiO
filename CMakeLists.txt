@@ -14,6 +14,17 @@ set(BUILD_SHARED_LIBS FALSE CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(SFML)
 add_compile_definitions(SFML_STATIC)
 
-add_executable(Help main.cpp)
+add_executable(Help main.cpp
+    Config.h
+    GameObject.h
+    Player.h
+    Player.cpp
+    Entities.h
+    Entities.cpp
+    Game.h
+    Game.cpp
+    PowerUps.h
+    PowerUps.cpp
+)
 
 target_link_libraries(Help PRIVATE Qt6::Widgets sfml-graphics sfml-window sfml-system opengl32 winmm gdi32)
