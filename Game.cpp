@@ -1,8 +1,6 @@
 #include "Game.h"
 #include "Config.h"
 #include "Player.h"
-#include "Entities.h"
-#include "PowerUps.h"
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
@@ -30,6 +28,7 @@ Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
     restartGame();
 }
 
+<<<<<<< HEAD
 void Game::spawnRandomEntity() {
     float startX = 900.f;
     int type = std::rand() % 100;
@@ -50,6 +49,8 @@ void Game::spawnRandomEntity() {
     }
 }
 
+=======
+>>>>>>> 17d9e104b11dc010399029a912e4a8feb103e9f2
 void Game::loadHighScore() {
     std::ifstream file("highscore.txt");
     if (file.is_open()) file >> highScore;
@@ -114,10 +115,12 @@ void Game::processEvents() {
         if (isGameOver && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
             restartGame();
         }
+        // OBS£UGA KLAWISZY
         if (!isGameOver && event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::F5) saveGameState();
             if (event.key.code == sf::Keyboard::F9) loadGameState();
         }
+        // PRZEKAZANIE EVENTÓW DO GRACZA
         if (!isGameOver && playerRef) {
             playerRef->handleEvent(event);
         }
@@ -128,6 +131,7 @@ void Game::update(float dt) {
     playerRef->addScore(dt * 50.f);
     scrollSpeed += 5.f * dt;
 
+<<<<<<< HEAD
     spawnTimer += dt;
     if (spawnTimer > 1.8f) {
         spawnRandomEntity();
@@ -141,6 +145,11 @@ void Game::update(float dt) {
     entities.erase(std::remove_if(entities.begin(), entities.end(),
                                   [](const std::unique_ptr<GameObject>& e) { return e->isMarkedForDeletion(); }),
                    entities.end());
+=======
+    for (auto& entity : entities) {
+        entity->update(dt, scrollSpeed);
+    }
+>>>>>>> 17d9e104b11dc010399029a912e4a8feb103e9f2
 }
 
 // <--- NOWE (Obs³uga kolizji)
