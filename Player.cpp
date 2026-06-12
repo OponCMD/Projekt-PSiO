@@ -61,7 +61,7 @@ void Player::update(float dt, float scrollSpeed) {
 
     if (!grounded) {
         if (isGliding && glideTimer > 0.f) {
-            velocity.y = 0.f; // Zatrzymanie w powietrzu
+            velocity.y = 0.f;
             glideTimer -= dt;
         } else {
             isGliding = false;
@@ -91,7 +91,6 @@ void Player::update(float dt, float scrollSpeed) {
 
 void Player::draw(sf::RenderWindow& window) { window.draw(shape); }
 sf::FloatRect Player::getBounds() const { return shape.getGlobalBounds(); }
-
 int Player::getScore() const { return static_cast<int>(score); }
 void Player::addScore(float s) { score += s; }
 void Player::setScore(float s) { score = s; }

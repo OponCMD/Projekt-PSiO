@@ -4,11 +4,13 @@
 #include <memory>
 #include "GameObject.h"
 
+// Deklaracja zapowiadająca (forward declaration)
 class Player;
 
 class Game {
 private:
     sf::RenderWindow window;
+    // Kontener przechowujący wszystkie obiekty gry (wymóg projektu)
     std::vector<std::unique_ptr<GameObject>> entities;
     Player* playerRef;
 
@@ -33,7 +35,7 @@ private:
 public:
     Game();
     void restartGame();
-    void saveGameState(); // <--- Nowe
-    void loadGameState(); // <--- Nowe
+    void saveGameState();
+    void loadGameState();
     void run();
 };
