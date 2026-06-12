@@ -4,13 +4,11 @@
 #include <memory>
 #include "GameObject.h"
 
-// Deklaracja zapowiadająca (forward declaration)
 class Player;
 
 class Game {
 private:
     sf::RenderWindow window;
-    // Kontener przechowujący wszystkie obiekty gry (wymóg projektu)
     std::vector<std::unique_ptr<GameObject>> entities;
     Player* playerRef;
 
@@ -18,6 +16,9 @@ private:
     float spawnTimer;
     int highScore;
     bool isGameOver;
+
+    sf::Texture coinTex;
+    sf::Texture bubbleTex;
 
     sf::Font font;
     sf::Text scoreText;
