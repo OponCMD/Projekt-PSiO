@@ -1,0 +1,1 @@
+Proszę o wstawienie wszystkich plików png oraz arial.ttf do build'a, aby działały obrazki, animacje, tekst

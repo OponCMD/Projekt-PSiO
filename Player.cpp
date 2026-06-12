@@ -2,11 +2,13 @@
 #include "Config.h"
 #include <cmath>
 
-Player::Player(const std::vector<sf::Texture>& runTex, const sf::Texture& jumpTex,
-               const sf::Texture& glidTex, const sf::Texture& shieldTex)
-    : velocity(0.f, 0.f), grounded(false), isGliding(false), hasShield(false), score(0.f),
-    glideTimer(0.f), runTextures(runTex), jumpUpTexture(jumpTex), glideTexture(glidTex),
-    shieldTexture(shieldTex), currentFrame(0), animationTimer(0.f) {
+Player::Player(const std::vector<sf::Texture>& runTex, const std::vector<sf::Texture>& duckTex,
+               const sf::Texture& jumpTex, const sf::Texture& glidTex, const sf::Texture& shieldTex)
+    : velocity(0.f, 0.f), grounded(false), isGliding(false),
+    isDucking(false), isSmashing(false), hasShield(false), score(0.f),
+    glideTimer(0.f), lastSTime(-10.f), runTextures(runTex), duckTextures(duckTex),
+    jumpUpTexture(jumpTex), glideTexture(glidTex), shieldTexture(shieldTex),
+    currentFrame(0), animationTimer(0.f) {
 
     shape.setSize(sf::Vector2f(60.f, 80.f));
     shape.setPosition(100.f, GROUND_Y - 80.f);
@@ -17,8 +19,13 @@ Player::Player(const std::vector<sf::Texture>& runTex, const sf::Texture& jumpTe
 }
 
 void Player::adjustShapeToState() {
-    shape.setSize(sf::Vector2f(60.f, 80.f));
-    sprite.setColor(sf::Color::White);
+    if (isDucking || isSmashing) {
+        shape.setSize(sf::Vector2f(60.f, 40.f));
+        sprite.setColor(isSmashing ? sf::Color::Red : sf::Color::White);
+    } else {
+        shape.setSize(sf::Vector2f(60.f, 80.f));
+        sprite.setColor(sf::Color::White);
+    }
 
     if (sprite.getTexture()) {
         sf::Vector2u texSize = sprite.getTexture()->getSize();
@@ -38,7 +45,12 @@ void Player::adjustShapeToState() {
     }
 }
 
+const std::vector<sf::Texture>& Player::getCurrentAnimationSet() const {
+    return (isDucking || isSmashing) ? duckTextures : runTextures;
+}
+
 void Player::handleEvent(const sf::Event& event) {
+    float currentTime = tapClock.getElapsedTime().asSeconds();
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::W) {
             if (grounded) {
@@ -49,9 +61,25 @@ void Player::handleEvent(const sf::Event& event) {
                 isGliding = true;
             }
         }
+        if (event.key.code == sf::Keyboard::S) {
+            if (grounded) {
+                isDucking = true;
+                currentFrame = 0;
+            } else if (currentTime - lastSTime <= DOUBLE_TAP_TIME) {
+                isSmashing = true;
+                isGliding = false;
+                velocity.y = SMASH_VELOCITY;
+                currentFrame = 0;
+            }
+            lastSTime = currentTime;
+        }
     }
     if (event.type == sf::Event::KeyReleased) {
         if (event.key.code == sf::Keyboard::W) isGliding = false;
+        if (event.key.code == sf::Keyboard::S) {
+            isDucking = false;
+            currentFrame = 0;
+        }
     }
 }
 
@@ -78,6 +106,7 @@ void Player::update(float dt, float scrollSpeed) {
         pos.y = GROUND_Y - shape.getSize().y;
         velocity.y = 0;
         grounded = true;
+        isSmashing = false;
         isGliding = false;
         glideTimer = MAX_GLIDE_TIME;
     } else {
@@ -89,17 +118,21 @@ void Player::update(float dt, float scrollSpeed) {
     shape.setPosition(pos);
 
     if (!grounded) {
-        if (isGliding || std::abs(velocity.y) < 100.f) sprite.setTexture(glideTexture, true);
+        if (isSmashing && !duckTextures.empty()) sprite.setTexture(duckTextures[0], true);
+        else if (isGliding || std::abs(velocity.y) < 100.f) sprite.setTexture(glideTexture, true);
         else if (velocity.y < -100.f) sprite.setTexture(jumpUpTexture, true);
         else if (!runTextures.empty()) sprite.setTexture(runTextures[0], true);
     } else {
-        if (!runTextures.empty()) {
-            animationTimer += dt;
-            if (animationTimer >= FRAME_TIME) {
-                animationTimer = 0.f;
-                currentFrame = (currentFrame + 1) % runTextures.size();
-            }
-            sprite.setTexture(runTextures[currentFrame], true);
+        const auto& activeAnimation = getCurrentAnimationSet();
+        if (!activeAnimation.empty()) {
+            if (grounded || isDucking) {
+                animationTimer += dt;
+                if (animationTimer >= FRAME_TIME) {
+                    animationTimer = 0.f;
+                    currentFrame = (currentFrame + 1) % activeAnimation.size();
+                }
+            } else currentFrame = 0;
+            sprite.setTexture(activeAnimation[currentFrame], true);
         }
     }
 
@@ -116,6 +149,7 @@ sf::FloatRect Player::getBounds() const { return shape.getGlobalBounds(); }
 int Player::getScore() const { return static_cast<int>(score); }
 void Player::addScore(float s) { score += s; }
 void Player::setScore(float s) { score = s; }
+bool Player::getIsSmashing() const { return isSmashing; }
 bool Player::getShield() const { return hasShield; }
 void Player::setShield(bool state) { hasShield = state; adjustShapeToState(); }
 sf::Vector2f Player::getPosition() const { return shape.getPosition(); }

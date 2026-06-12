@@ -19,9 +19,12 @@ private:
     float spawnTimer;
     int highScore;
     bool isGameOver;
+
     std::vector<sf::Texture> playerRunTextures;
+    std::vector<sf::Texture> playerDuckTextures;
     sf::Texture playerJumpTex;
     sf::Texture playerGlideTex;
+
     sf::Texture backgroundTex;
     sf::Texture groundTex;
     sf::Texture pitTex;

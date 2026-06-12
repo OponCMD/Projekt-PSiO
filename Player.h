@@ -12,12 +12,19 @@ private:
 
     bool grounded;
     bool isGliding;
+    bool isDucking;
+    bool isSmashing;
     bool hasShield;
 
     float score;
     float glideTimer;
 
+    sf::Clock tapClock;
+    float lastSTime;
+
     std::vector<sf::Texture> runTextures;
+    std::vector<sf::Texture> duckTextures;
+
     sf::Texture jumpUpTexture;
     sf::Texture glideTexture;
     sf::Texture shieldTexture;
@@ -27,10 +34,11 @@ private:
     const float FRAME_TIME = 0.12f;
 
     void adjustShapeToState();
+    const std::vector<sf::Texture>& getCurrentAnimationSet() const;
 
 public:
-    Player(const std::vector<sf::Texture>& runTex, const sf::Texture& jumpTex,
-           const sf::Texture& glidTex, const sf::Texture& shieldTex);
+    Player(const std::vector<sf::Texture>& runTex, const std::vector<sf::Texture>& duckTex,
+           const sf::Texture& jumpTex, const sf::Texture& glidTex, const sf::Texture& shieldTex);
 
     void handleEvent(const sf::Event& event);
     void update(float dt, float scrollSpeed) override;
@@ -40,6 +48,7 @@ public:
     int getScore() const;
     void addScore(float s);
     void setScore(float s);
+    bool getIsSmashing() const;
     bool getShield() const;
     void setShield(bool state);
     sf::Vector2f getPosition() const;

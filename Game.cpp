@@ -16,6 +16,9 @@ Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     loadHighScore();
 
+    if (!backgroundTex.loadFromFile("background.png")) std::cerr << "Blad: background.png\n";
+    if (!groundTex.loadFromFile("ground.png")) std::cerr << "Blad: ground.png\n";
+
     sf::Texture run1, run2;
     if (!run1.loadFromFile("prawa_noga.png") || !run2.loadFromFile("lewa_noga.png")) {
         std::cerr << "Blad: bieg\n";
@@ -23,11 +26,16 @@ Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
     playerRunTextures.push_back(run1);
     playerRunTextures.push_back(run2);
 
+    sf::Texture duck1, duck2;
+    if (!duck1.loadFromFile("prawa_noga_crouch.png") || !duck2.loadFromFile("lewa_noga_crouch.png")) {
+        std::cerr << "Blad: kucanie\n";
+    }
+    playerDuckTextures.push_back(duck1);
+    playerDuckTextures.push_back(duck2);
+
     if (!playerJumpTex.loadFromFile("skok.png")) std::cerr << "Blad: skok.png\n";
     if (!playerGlideTex.loadFromFile("lot.png")) std::cerr << "Blad: lot.png\n";
 
-    if (!backgroundTex.loadFromFile("background.png")) std::cerr << "Blad: background.png\n";
-    if (!groundTex.loadFromFile("ground.png")) std::cerr << "Blad: ground.png\n";
     if (!pitTex.loadFromFile("pit.png")) std::cerr << "Blad: pit.png\n";
     if (!barrierTex.loadFromFile("barrier.png")) std::cerr << "Blad: barrier.png\n";
     if (!flyingObstacleTex.loadFromFile("flying_obstacle.png")) std::cerr << "Blad: flying_obstacle.png\n";
@@ -53,21 +61,13 @@ Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
 void Game::spawnRandomEntity() {
     float startX = 900.f;
     int type = std::rand() % 100;
-
-    if (type < 20) {
-        entities.push_back(std::make_unique<Barrier>(startX, barrierTex));
-    } else if (type < 40) {
-        entities.push_back(std::make_unique<FlyingObstacle>(startX, flyingObstacleTex));
-    } else if (type < 60) {
+    if (type < 20) entities.push_back(std::make_unique<Barrier>(startX, barrierTex));
+    else if (type < 40) entities.push_back(std::make_unique<FlyingObstacle>(startX, flyingObstacleTex));
+    else if (type < 60) {
         entities.push_back(std::make_unique<Pit>(startX, pitTex));
-        if (std::rand() % 2 == 0) {
-            entities.push_back(std::make_unique<Barrier>(startX + 600.f, barrierTex));
-        }
-    } else if (type < 80) {
-        entities.push_back(std::make_unique<ScorePowerUp>(startX, GROUND_Y - 150.f, coinTex));
-    } else {
-        entities.push_back(std::make_unique<ShieldPowerUp>(startX, GROUND_Y - 120.f, bubbleTex));
-    }
+        if (std::rand() % 2 == 0) entities.push_back(std::make_unique<Barrier>(startX + 600.f, barrierTex));
+    } else if (type < 80) entities.push_back(std::make_unique<ScorePowerUp>(startX, GROUND_Y - 150.f, coinTex));
+    else entities.push_back(std::make_unique<ShieldPowerUp>(startX, GROUND_Y - 120.f, bubbleTex));
 }
 
 void Game::loadHighScore() {
@@ -87,21 +87,13 @@ void Game::restartGame() {
     scrollSpeed = BASE_SCROLL_SPEED;
     spawnTimer = 0.f;
 
-    auto p = std::make_unique<Player>(playerRunTextures, bubbleTex);
-    playerRef = p.get();
-    entities.push_back(std::move(p));
-
     auto bg = std::make_unique<Background>(backgroundTex, 0.3f);
     backgroundRef = bg.get();
     entities.push_back(std::move(bg));
 
     entities.push_back(std::make_unique<Ground>(groundTex, 1.0f));
 
-    auto p = std::make_unique<Player>(playerRunTextures, playerJumpTex, playerGlideTex, bubbleTex);
-    playerRef = p.get();
-    entities.push_back(std::move(p));
-
-    auto p = std::make_unique<Player>();
+    auto p = std::make_unique<Player>(playerRunTextures, playerDuckTextures, playerJumpTex, playerGlideTex, bubbleTex);
     playerRef = p.get();
     entities.push_back(std::move(p));
 }
@@ -144,9 +136,7 @@ void Game::processEvents() {
     sf::Event event;
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed) window.close();
-        if (isGameOver && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
-            restartGame();
-        }
+        if (isGameOver && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) restartGame();
         if (!isGameOver && event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::F5) saveGameState();
             if (event.key.code == sf::Keyboard::F9) loadGameState();
@@ -167,7 +157,6 @@ void Game::update(float dt) {
     }
 
     for (auto& entity : entities) entity->update(dt, scrollSpeed);
-
     entities.erase(std::remove_if(entities.begin(), entities.end(),
                                   [](const std::unique_ptr<GameObject>& e) { return e->isMarkedForDeletion(); }),
                    entities.end());
@@ -206,16 +195,6 @@ void Game::checkCollisions() {
             else if (dynamic_cast<Pit*>(entity.get())) {
                 triggerGameOver();
                 return;
-            }
-            else if (auto obstacle = dynamic_cast<Obstacle*>(entity.get())) {
-                if (playerRef->getShield()) {
-                    playerRef->setShield(false);
-                    obstacle->markForDeletion();
-                }
-                else {
-                    triggerGameOver();
-                    return;
-                }
             }
         }
     }
