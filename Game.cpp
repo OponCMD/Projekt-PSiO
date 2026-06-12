@@ -50,6 +50,28 @@ void Game::restartGame() {
     entities.push_back(std::move(p));
 }
 
+void Game::saveGameState() {
+    if (isGameOver) return;
+    std::ofstream file("savegame.txt");
+    if (file.is_open()) {
+        file << playerRef->getScore() << " "
+             << playerRef->getPosition().x << " "
+             << playerRef->getPosition().y << " "
+             << playerRef->getShield() << "\n";
+    }
+}
+
+void Game::loadGameState() {
+    std::ifstream file("savegame.txt");
+    if (file.is_open() && !isGameOver) {
+        float sc; float px, py; bool shield;
+        file >> sc >> px >> py >> shield;
+        playerRef->setScore(sc);
+        playerRef->setPosition(sf::Vector2f(px, py));
+        playerRef->setShield(shield);
+    }
+}
+
 void Game::run() {
     sf::Clock deltaClock;
     while (window.isOpen()) {
@@ -66,6 +88,18 @@ void Game::processEvents() {
     sf::Event event;
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed) window.close();
+        if (isGameOver && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
+            restartGame();
+        }
+        // OBS£UGA KLAWISZY
+        if (!isGameOver && event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::F5) saveGameState();
+            if (event.key.code == sf::Keyboard::F9) loadGameState();
+        }
+        // PRZEKAZANIE EVENTÓW DO GRACZA
+        if (!isGameOver && playerRef) {
+            playerRef->handleEvent(event);
+        }
     }
 }
 
@@ -93,6 +127,13 @@ void Game::render() {
     if (font.getInfo().family != "") {
         scoreText.setString("Punkty: " + std::to_string(playerRef->getScore()) + "   Hi-Score: " + std::to_string(highScore));
         window.draw(scoreText);
+    }
+
+    if (isGameOver) {
+        sf::RectangleShape deathScreen(sf::Vector2f(800.f, 600.f));
+        deathScreen.setFillColor(sf::Color(0, 0, 0, 150));
+        window.draw(deathScreen);
+        if (font.getInfo().family != "") window.draw(infoText);
     }
 
     window.display();
