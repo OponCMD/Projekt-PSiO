@@ -3,7 +3,7 @@
 
 class Obstacle : public GameObject {
 protected:
-    sf::RectangleShape shape;
+    sf::Sprite sprite;
 public:
     void update(float dt, float scrollSpeed) override;
     void draw(sf::RenderWindow& window) override;
@@ -12,15 +12,21 @@ public:
 
 class Barrier : public Obstacle {
 public:
-    Barrier(float startX);
+    Barrier(float startX, const sf::Texture& texture);
 };
 
 class FlyingObstacle : public Obstacle {
 public:
-    FlyingObstacle(float startX);
+    FlyingObstacle(float startX, const sf::Texture& texture);
 };
 
-class Pit : public Obstacle {
+class Pit : public GameObject {
+private:
+    sf::Sprite sprite;
+    float width;
 public:
-    Pit(float startX);
+    Pit(float startX, const sf::Texture& texture);
+    void update(float dt, float scrollSpeed) override;
+    void draw(sf::RenderWindow& window) override;
+    sf::FloatRect getBounds() const override;
 };

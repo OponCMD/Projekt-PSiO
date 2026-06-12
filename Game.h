@@ -19,6 +19,11 @@ private:
 
     sf::Texture coinTex;
     sf::Texture bubbleTex;
+    sf::Texture pitTex;
+    sf::Texture barrierTex;
+    sf::Texture flyingObstacleTex;
+    sf::Texture coinTex;
+    sf::Texture bubbleTex;
 
     sf::Font font;
     sf::Text scoreText;
