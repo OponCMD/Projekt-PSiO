@@ -11,11 +11,15 @@ private:
     sf::Vector2f velocity;
 
     bool grounded;
+    bool isGliding;
     bool hasShield;
 
     float score;
+    float glideTimer;
 
     std::vector<sf::Texture> runTextures;
+    sf::Texture jumpUpTexture;
+    sf::Texture glideTexture;
     sf::Texture shieldTexture;
 
     size_t currentFrame;
@@ -25,7 +29,8 @@ private:
     void adjustShapeToState();
 
 public:
-    Player(const std::vector<sf::Texture>& runTex, const sf::Texture& shieldTex);
+    Player(const std::vector<sf::Texture>& runTex, const sf::Texture& jumpTex,
+           const sf::Texture& glidTex, const sf::Texture& shieldTex);
 
     void handleEvent(const sf::Event& event);
     void update(float dt, float scrollSpeed) override;

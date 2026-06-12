@@ -20,6 +20,8 @@ private:
     int highScore;
     bool isGameOver;
     std::vector<sf::Texture> playerRunTextures;
+    sf::Texture playerJumpTex;
+    sf::Texture playerGlideTex;
     sf::Texture backgroundTex;
     sf::Texture groundTex;
     sf::Texture pitTex;

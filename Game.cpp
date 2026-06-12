@@ -23,6 +23,8 @@ Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
     playerRunTextures.push_back(run1);
     playerRunTextures.push_back(run2);
 
+    if (!playerJumpTex.loadFromFile("skok.png")) std::cerr << "Blad: skok.png\n";
+    if (!playerGlideTex.loadFromFile("lot.png")) std::cerr << "Blad: lot.png\n";
 
     if (!backgroundTex.loadFromFile("background.png")) std::cerr << "Blad: background.png\n";
     if (!groundTex.loadFromFile("ground.png")) std::cerr << "Blad: ground.png\n";
@@ -94,6 +96,10 @@ void Game::restartGame() {
     entities.push_back(std::move(bg));
 
     entities.push_back(std::make_unique<Ground>(groundTex, 1.0f));
+
+    auto p = std::make_unique<Player>(playerRunTextures, playerJumpTex, playerGlideTex, bubbleTex);
+    playerRef = p.get();
+    entities.push_back(std::move(p));
 
     auto p = std::make_unique<Player>();
     playerRef = p.get();

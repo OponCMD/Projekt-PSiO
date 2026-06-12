@@ -1,9 +1,12 @@
 #include "Player.h"
 #include "Config.h"
+#include <cmath>
 
-Player::Player(const std::vector<sf::Texture>& runTex, const sf::Texture& shieldTex)
-    : velocity(0.f, 0.f), grounded(false), hasShield(false), score(0.f),
-    runTextures(runTex), shieldTexture(shieldTex), currentFrame(0), animationTimer(0.f) {
+Player::Player(const std::vector<sf::Texture>& runTex, const sf::Texture& jumpTex,
+               const sf::Texture& glidTex, const sf::Texture& shieldTex)
+    : velocity(0.f, 0.f), grounded(false), isGliding(false), hasShield(false), score(0.f),
+    glideTimer(0.f), runTextures(runTex), jumpUpTexture(jumpTex), glideTexture(glidTex),
+    shieldTexture(shieldTex), currentFrame(0), animationTimer(0.f) {
 
     shape.setSize(sf::Vector2f(60.f, 80.f));
     shape.setPosition(100.f, GROUND_Y - 80.f);
@@ -36,6 +39,20 @@ void Player::adjustShapeToState() {
 }
 
 void Player::handleEvent(const sf::Event& event) {
+    if (event.type == sf::Event::KeyPressed) {
+        if (event.key.code == sf::Keyboard::W) {
+            if (grounded) {
+                velocity.y = JUMP_VELOCITY;
+                grounded = false;
+                glideTimer = MAX_GLIDE_TIME;
+            } else if (glideTimer > 0.f) {
+                isGliding = true;
+            }
+        }
+    }
+    if (event.type == sf::Event::KeyReleased) {
+        if (event.key.code == sf::Keyboard::W) isGliding = false;
+    }
 }
 
 void Player::update(float dt, float scrollSpeed) {
@@ -44,7 +61,13 @@ void Player::update(float dt, float scrollSpeed) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) velocity.x = PLAYER_HORIZ_SPEED;
 
     if (!grounded) {
-        velocity.y += GRAVITY * dt;
+        if (isGliding && glideTimer > 0.f) {
+            velocity.y = 0.f;
+            glideTimer -= dt;
+        } else {
+            isGliding = false;
+            velocity.y += GRAVITY * dt;
+        }
     }
 
     shape.move(velocity.x * dt, velocity.y * dt);
@@ -55,6 +78,8 @@ void Player::update(float dt, float scrollSpeed) {
         pos.y = GROUND_Y - shape.getSize().y;
         velocity.y = 0;
         grounded = true;
+        isGliding = false;
+        glideTimer = MAX_GLIDE_TIME;
     } else {
         grounded = false;
     }
@@ -63,17 +88,19 @@ void Player::update(float dt, float scrollSpeed) {
     if (pos.x > 800.f - shape.getSize().x) pos.x = 800.f - shape.getSize().x;
     shape.setPosition(pos);
 
-    if (!runTextures.empty()) {
-        if (grounded) {
+    if (!grounded) {
+        if (isGliding || std::abs(velocity.y) < 100.f) sprite.setTexture(glideTexture, true);
+        else if (velocity.y < -100.f) sprite.setTexture(jumpUpTexture, true);
+        else if (!runTextures.empty()) sprite.setTexture(runTextures[0], true);
+    } else {
+        if (!runTextures.empty()) {
             animationTimer += dt;
             if (animationTimer >= FRAME_TIME) {
                 animationTimer = 0.f;
                 currentFrame = (currentFrame + 1) % runTextures.size();
             }
-        } else {
-            currentFrame = 0;
+            sprite.setTexture(runTextures[currentFrame], true);
         }
-        sprite.setTexture(runTextures[currentFrame], true);
     }
 
     sprite.setPosition(shape.getPosition().x + shape.getSize().x / 2.f, shape.getPosition().y + shape.getSize().y);
