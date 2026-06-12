@@ -1,8 +1,6 @@
 #include "Game.h"
 #include "Config.h"
 #include "Player.h"
-#include "Entities.h"
-#include "PowerUps.h"
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
@@ -28,27 +26,6 @@ Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
     }
 
     restartGame();
-}
-
-// <--- NOWE (Spawnowanie)
-void Game::spawnRandomEntity() {
-    float startX = 900.f;
-    int type = std::rand() % 100;
-
-    if (type < 20) {
-        entities.push_back(std::make_unique<Barrier>(startX));
-    } else if (type < 40) {
-        entities.push_back(std::make_unique<FlyingObstacle>(startX));
-    } else if (type < 60) {
-        entities.push_back(std::make_unique<Pit>(startX));
-        if (std::rand() % 2 == 0) {
-            entities.push_back(std::make_unique<Barrier>(startX + 600.f));
-        }
-    } else if (type < 80) {
-        entities.push_back(std::make_unique<ScorePowerUp>(startX, GROUND_Y - 150.f));
-    } else {
-        entities.push_back(std::make_unique<ShieldPowerUp>(startX, GROUND_Y - 120.f));
-    }
 }
 
 void Game::loadHighScore() {
@@ -114,10 +91,12 @@ void Game::processEvents() {
         if (isGameOver && event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
             restartGame();
         }
+        // OBS£UGA KLAWISZY
         if (!isGameOver && event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::F5) saveGameState();
             if (event.key.code == sf::Keyboard::F9) loadGameState();
         }
+        // PRZEKAZANIE EVENTÓW DO GRACZA
         if (!isGameOver && playerRef) {
             playerRef->handleEvent(event);
         }
@@ -128,21 +107,9 @@ void Game::update(float dt) {
     playerRef->addScore(dt * 50.f);
     scrollSpeed += 5.f * dt;
 
-    // <--- NOWE (Spawnowanie timer)
-    spawnTimer += dt;
-    if (spawnTimer > 1.8f) {
-        spawnRandomEntity();
-        spawnTimer = 0.f;
-    }
-
     for (auto& entity : entities) {
         entity->update(dt, scrollSpeed);
     }
-
-    // <--- NOWE (Czyszczenie pamiêci po usuniêtych obiektach)
-    entities.erase(std::remove_if(entities.begin(), entities.end(),
-                                  [](const std::unique_ptr<GameObject>& e) { return e->isMarkedForDeletion(); }),
-                   entities.end());
 }
 
 void Game::render() {
