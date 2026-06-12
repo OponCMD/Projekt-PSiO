@@ -16,6 +16,14 @@ Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     loadHighScore();
 
+    sf::Texture run1, run2;
+    if (!run1.loadFromFile("prawa_noga.png") || !run2.loadFromFile("lewa_noga.png")) {
+        std::cerr << "Blad: bieg\n";
+    }
+    playerRunTextures.push_back(run1);
+    playerRunTextures.push_back(run2);
+
+
     if (!backgroundTex.loadFromFile("background.png")) std::cerr << "Blad: background.png\n";
     if (!groundTex.loadFromFile("ground.png")) std::cerr << "Blad: ground.png\n";
     if (!pitTex.loadFromFile("pit.png")) std::cerr << "Blad: pit.png\n";
@@ -76,6 +84,10 @@ void Game::restartGame() {
     isGameOver = false;
     scrollSpeed = BASE_SCROLL_SPEED;
     spawnTimer = 0.f;
+
+    auto p = std::make_unique<Player>(playerRunTextures, bubbleTex);
+    playerRef = p.get();
+    entities.push_back(std::move(p));
 
     auto bg = std::make_unique<Background>(backgroundTex, 0.3f);
     backgroundRef = bg.get();
@@ -188,6 +200,16 @@ void Game::checkCollisions() {
             else if (dynamic_cast<Pit*>(entity.get())) {
                 triggerGameOver();
                 return;
+            }
+            else if (auto obstacle = dynamic_cast<Obstacle*>(entity.get())) {
+                if (playerRef->getShield()) {
+                    playerRef->setShield(false);
+                    obstacle->markForDeletion();
+                }
+                else {
+                    triggerGameOver();
+                    return;
+                }
             }
         }
     }
