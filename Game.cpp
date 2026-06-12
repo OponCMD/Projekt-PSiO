@@ -10,11 +10,17 @@
 #include <algorithm>
 
 Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
-    scrollSpeed(BASE_SCROLL_SPEED), spawnTimer(0), isGameOver(false) {
+    scrollSpeed(BASE_SCROLL_SPEED), spawnTimer(0), isGameOver(false),
+    playerRef(nullptr), backgroundRef(nullptr) {
     window.setFramerateLimit(60);
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     loadHighScore();
 
+    if (!backgroundTex.loadFromFile("background.png")) std::cerr << "Blad: background.png\n";
+    if (!groundTex.loadFromFile("ground.png")) std::cerr << "Blad: ground.png\n";
+    if (!pitTex.loadFromFile("pit.png")) std::cerr << "Blad: pit.png\n";
+    if (!barrierTex.loadFromFile("barrier.png")) std::cerr << "Blad: barrier.png\n";
+    if (!flyingObstacleTex.loadFromFile("flying_obstacle.png")) std::cerr << "Blad: flying_obstacle.png\n";
     if (!coinTex.loadFromFile("coin.png")) std::cerr << "Blad: coin.png\n";
     if (!bubbleTex.loadFromFile("bubble.png")) std::cerr << "Blad: bubble.png\n";
 
@@ -30,29 +36,30 @@ Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
         infoText.setPosition(250.f, 250.f);
         infoText.setString("GAME OVER\nNacisnij ENTER");
     }
-    if (!pitTex.loadFromFile("pit.png")) std::cerr << "Blad: pit.png\n";
-    if (!barrierTex.loadFromFile("barrier.png")) std::cerr << "Blad: barrier.png\n";
-    if (!flyingObstacleTex.loadFromFile("flying_obstacle.png")) std::cerr << "Blad: flying_obstacle.png\n";
 
-    void Game::spawnRandomEntity() {
-        float startX = 900.f;
-        int type = std::rand() % 100;
+    restartGame();
+}
 
-        if (type < 20) {
-            entities.push_back(std::make_unique<Barrier>(startX, barrierTex));
-        } else if (type < 40) {
-            entities.push_back(std::make_unique<FlyingObstacle>(startX, flyingObstacleTex));
-        } else if (type < 60) {
-            entities.push_back(std::make_unique<Pit>(startX, pitTex));
-            if (std::rand() % 2 == 0) {
-                entities.push_back(std::make_unique<Barrier>(startX + 600.f, barrierTex));
-            }
-        } else if (type < 80) {
-            entities.push_back(std::make_unique<ScorePowerUp>(startX, GROUND_Y - 150.f, coinTex));
-        } else {
-            entities.push_back(std::make_unique<ShieldPowerUp>(startX, GROUND_Y - 120.f, bubbleTex));
+void Game::spawnRandomEntity() {
+    float startX = 900.f;
+    int type = std::rand() % 100;
+
+    if (type < 20) {
+        entities.push_back(std::make_unique<Barrier>(startX, barrierTex));
+    } else if (type < 40) {
+        entities.push_back(std::make_unique<FlyingObstacle>(startX, flyingObstacleTex));
+    } else if (type < 60) {
+        entities.push_back(std::make_unique<Pit>(startX, pitTex));
+        if (std::rand() % 2 == 0) {
+            entities.push_back(std::make_unique<Barrier>(startX + 600.f, barrierTex));
         }
+    } else if (type < 80) {
+        entities.push_back(std::make_unique<ScorePowerUp>(startX, GROUND_Y - 150.f, coinTex));
+    } else {
+        entities.push_back(std::make_unique<ShieldPowerUp>(startX, GROUND_Y - 120.f, bubbleTex));
     }
+}
+
 void Game::loadHighScore() {
     std::ifstream file("highscore.txt");
     if (file.is_open()) file >> highScore;

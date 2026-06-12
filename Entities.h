@@ -1,6 +1,30 @@
 #pragma once
 #include "GameObject.h"
 
+class Background : public GameObject {
+private:
+    sf::Sprite sprite;
+    float currentOffset;
+    float speedMultiplier;
+public:
+    Background(sf::Texture& texture, float speedMult = 0.3f);
+    void update(float dt, float scrollSpeed) override;
+    void draw(sf::RenderWindow& window) override;
+    sf::FloatRect getBounds() const override;
+};
+
+class Ground : public GameObject {
+private:
+    sf::Sprite sprite;
+    float currentOffset;
+    float speedMultiplier;
+public:
+    Ground(sf::Texture& texture, float speedMult = 1.0f);
+    void update(float dt, float scrollSpeed) override;
+    void draw(sf::RenderWindow& window) override;
+    sf::FloatRect getBounds() const override;
+};
+
 class Obstacle : public GameObject {
 protected:
     sf::Sprite sprite;

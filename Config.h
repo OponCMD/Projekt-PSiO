@@ -1,8 +1,5 @@
 #pragma once
 
-// ==========================================
-// 1. PARAMETRYZACJA
-// ==========================================
 constexpr float GRAVITY = 2500.f;
 constexpr float JUMP_VELOCITY = -850.f;
 constexpr float SMASH_VELOCITY = 1500.f;

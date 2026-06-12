@@ -1,9 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-// ==========================================
-// 2. KLASA BAZOWA: GameObject
-// ==========================================
 class GameObject {
 protected:
     bool markedForDeletion = false;

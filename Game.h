@@ -5,11 +5,14 @@
 #include "GameObject.h"
 
 class Player;
+class Background;
 
 class Game {
 private:
     sf::RenderWindow window;
     std::vector<std::unique_ptr<GameObject>> entities;
+
+    Background* backgroundRef;
     Player* playerRef;
 
     float scrollSpeed;
@@ -17,8 +20,8 @@ private:
     int highScore;
     bool isGameOver;
 
-    sf::Texture coinTex;
-    sf::Texture bubbleTex;
+    sf::Texture backgroundTex;
+    sf::Texture groundTex;
     sf::Texture pitTex;
     sf::Texture barrierTex;
     sf::Texture flyingObstacleTex;
@@ -32,6 +35,7 @@ private:
     void spawnRandomEntity();
     void loadHighScore();
     void saveHighScore();
+    void triggerGameOver();
 
     void processEvents();
     void update(float dt);
