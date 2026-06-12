@@ -6,7 +6,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
-#include <algorithm>
+#include <algorithm> // Wymagane dla std::remove_if
 
 Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
     scrollSpeed(BASE_SCROLL_SPEED), spawnTimer(0), isGameOver(false) {
@@ -30,7 +30,6 @@ Game::Game() : window(sf::VideoMode(800, 600), "Endless Runner C++ OOP"),
     restartGame();
 }
 
-// <--- NOWE (Spawnowanie)
 void Game::spawnRandomEntity() {
     float startX = 900.f;
     int type = std::rand() % 100;
@@ -102,6 +101,7 @@ void Game::run() {
         processEvents();
         if (!isGameOver) {
             update(dt);
+            checkCollisions(); // <--- WYWO£ANIE KOLIZJI
         }
         render();
     }
@@ -128,7 +128,6 @@ void Game::update(float dt) {
     playerRef->addScore(dt * 50.f);
     scrollSpeed += 5.f * dt;
 
-    // <--- NOWE (Spawnowanie timer)
     spawnTimer += dt;
     if (spawnTimer > 1.8f) {
         spawnRandomEntity();
@@ -139,10 +138,50 @@ void Game::update(float dt) {
         entity->update(dt, scrollSpeed);
     }
 
-    // <--- NOWE (Czyszczenie pamiêci po usuniêtych obiektach)
     entities.erase(std::remove_if(entities.begin(), entities.end(),
                                   [](const std::unique_ptr<GameObject>& e) { return e->isMarkedForDeletion(); }),
                    entities.end());
+}
+
+// <--- NOWE (Obs³uga kolizji)
+void Game::checkCollisions() {
+    sf::FloatRect playerBounds = playerRef->getBounds();
+
+    for (auto& entity : entities) {
+        if (entity.get() == playerRef) continue;
+
+        if (playerBounds.intersects(entity->getBounds())) {
+            // Dynamic casting wymóg z listy!
+            if (auto powerUp = dynamic_cast<PowerUp*>(entity.get())) {
+                if (dynamic_cast<ShieldPowerUp*>(powerUp)) {
+                    playerRef->setShield(true);
+                } else if (dynamic_cast<ScorePowerUp*>(powerUp)) {
+                    playerRef->addScore(500.f);
+                }
+                powerUp->markForDeletion();
+            }
+            else if (auto obstacle = dynamic_cast<Obstacle*>(entity.get())) {
+                if (auto barrier = dynamic_cast<Barrier*>(obstacle)) {
+                    if (playerRef->getIsSmashing()) {
+                        barrier->markForDeletion();
+                        playerRef->addScore(200.f);
+                        continue;
+                    }
+                }
+
+                if (playerRef->getShield()) {
+                    playerRef->setShield(false);
+                    obstacle->markForDeletion();
+                } else {
+                    isGameOver = true;
+                    if (playerRef->getScore() > highScore) {
+                        highScore = playerRef->getScore();
+                        saveHighScore();
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Game::render() {

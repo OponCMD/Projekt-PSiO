@@ -21,11 +21,13 @@ private:
     sf::Text scoreText;
     sf::Text infoText;
 
+    void spawnRandomEntity();
     void loadHighScore();
     void saveHighScore();
 
     void processEvents();
     void update(float dt);
+    void checkCollisions();
     void render();
 
 public:
