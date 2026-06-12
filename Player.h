@@ -32,4 +32,11 @@ public:
     int getScore() const;
     void addScore(float s);
     void setScore(float s);
+
+    // <--- Nowe (potrzebne do zapisu stanu gry i kolizji)
+    bool getIsSmashing() const;
+    bool getShield() const;
+    void setShield(bool state);
+    sf::Vector2f getPosition() const;
+    void setPosition(sf::Vector2f p);
 };

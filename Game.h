@@ -31,5 +31,7 @@ private:
 public:
     Game();
     void restartGame();
+    void saveGameState(); // <--- Nowe
+    void loadGameState(); // <--- Nowe
     void run();
 };
