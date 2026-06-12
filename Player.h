@@ -24,6 +24,7 @@ private:
 public:
     Player();
 
+    void handleEvent(const sf::Event& event);
     void update(float dt, float scrollSpeed) override;
     void draw(sf::RenderWindow& window) override;
     sf::FloatRect getBounds() const override;
